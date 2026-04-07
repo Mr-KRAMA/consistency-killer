@@ -52,12 +52,15 @@ router.post('/', async (req, res, next) => {
   }
 });
 
-// PUT /api/diet/:id
+// PUT /api/diet/:id — only allow safe fields
 router.put('/:id', async (req, res, next) => {
   try {
+    const allowed = ['name', 'type', 'calories', 'protein', 'carbs', 'fats', 'logged'];
+    const updates = {};
+    allowed.forEach((key) => { if (req.body[key] !== undefined) updates[key] = req.body[key]; });
     const meal = await Meal.findOneAndUpdate(
       { _id: req.params.id, user: req.user._id },
-      req.body,
+      updates,
       { new: true, runValidators: true }
     );
     if (!meal) return res.status(404).json({ message: 'Meal not found' });

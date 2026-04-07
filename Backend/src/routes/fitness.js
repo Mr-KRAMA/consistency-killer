@@ -52,12 +52,15 @@ router.post('/', async (req, res, next) => {
   }
 });
 
-// PUT /api/fitness/:id
+// PUT /api/fitness/:id — only allow safe fields
 router.put('/:id', async (req, res, next) => {
   try {
+    const allowed = ['exercise', 'category', 'duration', 'calories', 'completed'];
+    const updates = {};
+    allowed.forEach((key) => { if (req.body[key] !== undefined) updates[key] = req.body[key]; });
     const workout = await Workout.findOneAndUpdate(
       { _id: req.params.id, user: req.user._id },
-      req.body,
+      updates,
       { new: true, runValidators: true }
     );
     if (!workout) return res.status(404).json({ message: 'Workout not found' });

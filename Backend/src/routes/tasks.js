@@ -67,12 +67,15 @@ router.post('/', async (req, res, next) => {
   }
 });
 
-// PUT /api/tasks/:id
+// PUT /api/tasks/:id — only allow safe fields
 router.put('/:id', async (req, res, next) => {
   try {
+    const allowed = ['title', 'category', 'plannedTime', 'actualTime', 'completed'];
+    const updates = {};
+    allowed.forEach((key) => { if (req.body[key] !== undefined) updates[key] = req.body[key]; });
     const task = await Task.findOneAndUpdate(
       { _id: req.params.id, user: req.user._id },
-      req.body,
+      updates,
       { new: true, runValidators: true }
     );
     if (!task) return res.status(404).json({ message: 'Task not found' });
